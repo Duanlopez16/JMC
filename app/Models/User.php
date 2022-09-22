@@ -8,25 +8,74 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * Class User
+ *
+ * @property $id
+ * @property $name
+ * @property $email
+ * @property $email_verified_at
+ * @property $password
+ * @property $rol_id
+ * @property $document_type_id
+ * @property $document_number
+ * @property $phone
+ * @property $date_birth
+ * @property $address
+ * @property $remember_token
+ * @property $status
+ * @property $created_at
+ * @property $user_creator
+ * @property $updated_at
+ * @property $user_last_update
+ *
+ * @property DocumentType $documentType
+ * @property DocumentType[] $documentTypes
+ * @property DocumentType[] $documentTypes
+ * @property Role[] $roles
+ * @property Role[] $roles
+ * @property Role $role
+ * @property User $user
+ * @property User[] $users
+ * @property User $user
+ * @property User[] $users
+ * @package App
+ * @mixin \Illuminate\Database\Eloquent\Builder
+ */
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
+    static $rules = [
+        'name' => 'required',
+        'email' => 'required',
+        'rol_id' => 'required',
+        'document_type_id' => 'required',
+        'document_number' => 'required',
+        'phone' => 'required',
+        'date_birth' => 'required',
+        'address' => 'required',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * perPage
      *
-     * @var array<int, string>
+     * @var int
+     */
+    protected $perPage = 20;
+
+    /**
+     * Attributes that should be mass-assignable.
+     *
+     * @var array
+     */
+    protected $fillable = ['name', 'email', 'rol_id', 'document_type_id', 'document_number', 'phone', 'date_birth', 'address', 'status', 'user_creator', 'user_last_update'];
+
+
+    /**
+     * hidden
+     *
+     * @var array
      */
     protected $hidden = [
         'password',
@@ -41,4 +90,35 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function documentType()
+    {
+        return $this->hasOne('App\Models\DocumentType', 'id', 'document_type_id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function role()
+    {
+        return $this->hasOne('App\Models\Role', 'id', 'rol_id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function user_creator()
+    {
+        return $this->hasOne('App\Models\User', 'id', 'user_creator');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function user_last_update()
+    {
+        return $this->hasMany('App\Models\User', 'user_last_update', 'id');
+    }
 }
