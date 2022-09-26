@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-
 /**
  * Class Role
  *
@@ -30,9 +29,17 @@ class Role extends Model
 
     use HasFactory;
 
-    protected $table = 'role';
 
-    static $rules = [];
+    static $rules = [
+        'name' => 'required'
+    ];
+
+    /**
+     * table
+     *
+     * @var string
+     */
+    protected $table = 'role';
 
     /**
      * perPage
@@ -46,24 +53,8 @@ class Role extends Model
      *
      * @var array
      */
-    protected $fillable = ['uuid', 'name', 'description', 'status', 'user_creator', 'user_last_update'];
+    protected $fillable = ['uuid', 'name', 'description', 'status'];
 
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
-     */
-    public function user_creator()
-    {
-        return $this->hasOne('App\Models\User', 'id', 'user_creator');
-    }
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
-     */
-    public function user_last_update()
-    {
-        return $this->hasOne('App\Models\User', 'id', 'user_last_update');
-    }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
@@ -71,5 +62,44 @@ class Role extends Model
     public function users()
     {
         return $this->hasMany('App\Models\User', 'rol_id', 'id');
+    }
+
+    /**
+     * boot
+     *
+     * @return void
+     */
+    public static function boot()
+    {
+        parent::boot();
+
+        self::creating(function ($model) {
+            $uuid = \Ramsey\Uuid\Uuid::uuid4();
+            $model->uuid = $uuid->toString();
+            $model->user_creator = auth()->id();
+            return $model;
+        });
+
+        self::created(function ($model) {
+            // ... code here
+        });
+
+        self::updating(function ($model) {
+            $model->user_last_update = auth()->id();
+            $model->updated_at = date('Y-m-d H:i:s');
+            return $model;
+        });
+
+        self::updated(function ($model) {
+            // ... code here
+        });
+
+        self::deleting(function ($model) {
+            // ... code here
+        });
+
+        self::deleted(function ($model) {
+            // ... code here
+        });
     }
 }

@@ -79,4 +79,42 @@ class DocumentType extends Model
     {
         return $this->hasOne('App\Models\User', 'id', 'user_last_update');
     }
+
+    /**
+     * boot
+     *
+     * @return void
+     */
+    public static function boot()
+    {
+        parent::boot();
+
+        self::creating(function ($model) {
+            $uuid = \Ramsey\Uuid\Uuid::uuid4();
+            $model->uuid = $uuid->toString();
+            $model->user_creator = auth()->id();
+            return $model;
+        });
+
+        self::created(function ($model) {
+            // ... code here
+        });
+
+        self::updating(function ($model) {
+            $model->user_last_update = auth()->id();
+            return $model;
+        });
+
+        self::updated(function ($model) {
+            // ... code here
+        });
+
+        self::deleting(function ($model) {
+            // ... code here
+        });
+
+        self::deleted(function ($model) {
+            // ... code here
+        });
+    }
 }

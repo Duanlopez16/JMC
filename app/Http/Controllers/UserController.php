@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use Illuminate\Http\Request;
-
 /**
  * Class UserController
  * @package App\Http\Controllers
  */
 class UserController extends Controller
 {
+
+    const ROUTE_BASE = 'user';
+
     /**
      * Display a listing of the resource.
      *
@@ -18,10 +18,21 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::paginate();
+        try {
+            $users = \App\Models\User::where('id', '!=', auth()->id())
+                ->where('status', 1)
+                ->orderBy('created_at', 'Desc')
+                ->paginate();
 
-        return view('user.index', compact('users'))
-            ->with('i', (request()->input('page', 1) - 1) * $users->perPage());
+            return view('user.index', compact('users'))
+                ->with(['role:id,name'])
+                ->with(['documentType:id:abbreviation'])
+                ->with('i', (request()->input('page', 1) - 1) * $users->perPage());
+        } catch (\Exception $ex) {
+            $route = self::ROUTE_BASE;
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
     }
 
     /**
@@ -31,8 +42,16 @@ class UserController extends Controller
      */
     public function create()
     {
-        $user = new User();
-        return view('user.create', compact('user'));
+        try {
+            $user = new \App\Models\User();
+            $rols =  \App\Models\Role::where('status', '=', 1)->pluck('name', 'id');
+            $documents_types = \App\Models\DocumentType::where('status', '=', 1)->pluck('name', 'id');
+            return view('user.create', compact('user', 'rols', 'documents_types'));
+        } catch (\Exception $ex) {
+            $route = self::ROUTE_BASE;
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
     }
 
     /**
@@ -41,40 +60,87 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(\Illuminate\Http\Request $request)
     {
-        request()->validate(User::$rules);
+        $rules = \App\Models\User::$rules;
 
-        $user = User::create($request->all());
+        $rules['date_birth'] = [
+            'required',
+            'date',
+            function ($attribute, $value, $fail) {
+                if ($value >= date('Y-m-d')) {
+                    $fail($attribute . ' the date entered cannot be greater than the current date');
+                }
+            },
+        ];
 
-        return redirect()->route('users.index')
-            ->with('success', 'User created successfully.');
+        $rules['email'] = ['required', 'email', 'unique:users'];
+        $rules['document_number'] = ['required', 'integer', 'unique:users'];
+        $rules['phone'] = ['required', 'integer', 'unique:users'];
+        request()->validate($rules);
+        try {
+            $data = $request->all();
+            $data['password'] = \Illuminate\Support\Facades\Hash::make($data['document_number']);
+            \App\Models\User::create($data);
+            return redirect()->route('user.index')
+                ->with('success', 'Usuario creado correctamente.');
+        } catch (\Exception $ex) {
+            $route = self::ROUTE_BASE;
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int $id
+     * @param  string $uuid
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(string $uuid)
     {
-        $user = User::find($id);
+        $route = self::ROUTE_BASE;
 
-        return view('user.show', compact('user'));
+        try {
+            $user = \App\Models\User::where('uuid', $uuid)
+                ->where('status', 1)
+                ->with(['role:id,name', 'documentType:id,abbreviation'])
+                ->first();
+            if (!empty($user)) {
+                $user->age =  \App\Services\Utils::calculate_age($user->date_birth)->data->y ?? 0;
+                return view('user.show', compact('user'));
+            } else {
+                return view('errors.notfound', compact('route'));
+            }
+        } catch (\Exception $ex) {
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int $id
+     * @param  string $uuid
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(string $uuid)
     {
-        $user = User::find($id);
+        $route = self::ROUTE_BASE;
 
-        return view('user.edit', compact('user'));
+        try {
+            $user = \App\Models\User::where('uuid', $uuid)->where('status', 1)->first();
+            if (!empty($user)) {
+                $rols =  \App\Models\Role::where('status', '=', 1)->pluck('name', 'id');
+                $documents_types = \App\Models\DocumentType::where('status', '=', 1)->pluck('name', 'id');
+                return view('user.edit', compact('user', 'rols', 'documents_types'));
+            } else {
+                return view('errors.notfound', compact('route'));
+            }
+        } catch (\Exception $ex) {
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
     }
 
     /**
@@ -84,26 +150,164 @@ class UserController extends Controller
      * @param  User $user
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, User $user)
+    public function update(\Illuminate\Http\Request $request, \App\Models\User $user)
     {
-        request()->validate(User::$rules);
+        $route = self::ROUTE_BASE;
+        $rules = \App\Models\User::$rules;
+        $data = $request->all();
+        $veryfy_user = \App\Models\User::Where(
+            function ($query) use ($data) {
+                $query->orWhere('email', $data['email'])
+                    ->orWhere('document_number', $data['document_number'])
+                    ->orWhere('phone', $data['phone']);
+            }
+        )
+            ->where('uuid', '!=', $user->uuid)
+            ->first();
 
-        $user->update($request->all());
+        $rules['email'] = [
+            'email',
+            'required',
+            function ($attribute, $value, $fail) use ($veryfy_user) {
+                if (!empty($veryfy_user) && $value == $veryfy_user->email) {
+                    $fail($attribute . ' entered is already registered.');
+                }
+            }
+        ];
 
-        return redirect()->route('users.index')
-            ->with('success', 'User updated successfully');
+        $rules['document_number'] = [
+            'required',
+            'integer',
+            function ($attribute, $value, $fail) use ($veryfy_user) {
+                if (!empty($veryfy_user) && $value == $veryfy_user->document_number) {
+                    $fail($attribute . ' entered is already registered.');
+                }
+            }
+        ];
+
+        $rules['phone'] = [
+            'required',
+            'integer',
+            function ($attribute, $value, $fail) use ($veryfy_user) {
+                if (!empty($veryfy_user) && $value == $veryfy_user->phone) {
+                    $fail($attribute . ' entered is already registered.');
+                }
+            }
+        ];
+
+        request()->validate($rules);
+
+        try {
+
+            $user->update($request->all());
+
+            return redirect()->route('user.index')
+                ->with('success', 'Usuario editado correctamente.');
+        } catch (\Exception $ex) {
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
     }
 
     /**
-     * @param int $id
+     * @param string $uuid
      * @return \Illuminate\Http\RedirectResponse
      * @throws \Exception
      */
-    public function destroy($id)
+    public function destroy(string $uuid)
     {
-        $user = User::find($id)->delete();
+        $route = self::ROUTE_BASE;
+        try {
+            $user = \App\Models\User::where('uuid', $uuid)->where('status', 1)->first();
+            if (!empty($user)) {
+                $user->status = 0;
+                $user->update();
+                return redirect()->route('user.index')
+                    ->with('success', 'Usuario editado correctamente.');
+            } else {
+                return view('errors.notfound', compact('route'));
+            }
+        } catch (\Exception $ex) {
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
+    }
 
-        return redirect()->route('users.index')
-            ->with('success', 'User deleted successfully');
+    /**
+     * update_password
+     *
+     * @return void
+     */
+    public function update_password()
+    {
+        $route = self::ROUTE_BASE;
+        try {
+            return view('user.update_password');
+        } catch (\Exception $ex) {
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
+    }
+
+    /**
+     * update_password_action
+     *
+     * @param  mixed $request
+     * @return void
+     */
+    public function update_password_action(\Illuminate\Http\Request $request)
+    {
+        $route = self::ROUTE_BASE;
+        request()->validate([
+            'password' => 'min:6|required_with:password_confirmation|same:password_confirmation',
+            'password_confirmation' => 'min:6'
+        ]);
+        try {
+            $user = \App\Models\User::where([
+                ['id', (int)auth()->id()],
+                ['status', 1]
+            ])->first();
+
+            if (!empty($user)) {
+                $data = $request->all();
+                $user->password = \Illuminate\Support\Facades\Hash::make($data['password']);
+                $user->update();
+                return view('home');
+            } else {
+                return view('errors.notfound', compact('route'));
+            }
+        } catch (\Exception $ex) {
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
+    }
+
+    /**
+     * search
+     *
+     * @param  \Illuminate\Http\Request $request
+     * @return void
+     */
+    public function search(\Illuminate\Http\Request $request)
+    {
+        $route = self::ROUTE_BASE;
+
+        try {
+            $data = $request->all();
+
+            $users = \App\Models\User::where('status', 1)
+                ->where('id', '!=', auth()->id())
+                ->where('email', 'LIKE', '%' . $data['email'] . '%')
+                ->orderBy('created_at', 'DESC')
+                ->paginate();
+
+            return view('user.index', compact('users'))
+                ->with(['rol:id,nombre'])
+                ->with(['TipoDocumento:id,abreviatura'])
+                ->with('i', (request()->input('page', 1) - 1) * $users->perPage());
+        } catch (\Exception $ex) {
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
     }
 }

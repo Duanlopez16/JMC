@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Role;
 use Illuminate\Http\Request;
 
 /**
@@ -11,6 +10,9 @@ use Illuminate\Http\Request;
  */
 class RoleController extends Controller
 {
+
+    const  ROUTE_BASE = 'rol';
+
     /**
      * Display a listing of the resource.
      *
@@ -18,10 +20,16 @@ class RoleController extends Controller
      */
     public function index()
     {
-        $roles = Role::paginate();
+        try {
+            $roles = \App\Models\Role::where('status', 1)->paginate();
 
-        return view('role.index', compact('roles'))
-            ->with('i', (request()->input('page', 1) - 1) * $roles->perPage());
+            return view('role.index', compact('roles'))
+                ->with('i', (request()->input('page', 1) - 1) * $roles->perPage());
+        } catch (\Exception $ex) {
+            $route = self::ROUTE_BASE;
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
     }
 
     /**
@@ -31,8 +39,14 @@ class RoleController extends Controller
      */
     public function create()
     {
-        $role = new Role();
-        return view('role.create', compact('role'));
+        $route = self::ROUTE_BASE;
+        try {
+            $role = new \App\Models\Role();
+            return view('role.create', compact('role'));
+        } catch (\Exception $ex) {
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
     }
 
     /**
@@ -41,40 +55,62 @@ class RoleController extends Controller
      * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(\Illuminate\Http\Request $request)
     {
-        request()->validate(Role::$rules);
-
-        $role = Role::create($request->all());
-
-        return redirect()->route('roles.index')
-            ->with('success', 'Role created successfully.');
+        $route = self::ROUTE_BASE;
+        request()->validate(\App\Models\Role::$rules);
+        try {
+            \App\Models\Role::create($request->all());
+            return redirect()->route('role.index')
+                ->with('success', 'Rol creado correctamente.');
+        } catch (\Exception $ex) {
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int $id
+     * @param  string $uuid
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(string $uuid)
     {
-        $role = Role::find($id);
-
-        return view('role.show', compact('role'));
+        $route = self::ROUTE_BASE;
+        try {
+            $role = \App\Models\Role::where('uuid', $uuid)->where('status', 1)->first();
+            if (!empty($role)) {
+                return view('role.show', compact('role'));
+            } else {
+                return view('errors.notfound', compact('route'));
+            }
+        } catch (\Exception $ex) {
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int $id
+     * @param  string $uuid
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(string $uuid)
     {
-        $role = Role::find($id);
-
-        return view('role.edit', compact('role'));
+        $route = self::ROUTE_BASE;
+        try {
+            $role = \App\Models\Role::where('uuid', $uuid)->where('status', 1)->first();
+            if (!empty($role)) {
+                return view('role.edit', compact('role'));
+            } else {
+                return view('errors.notfound', compact('route'));
+            }
+        } catch (\Exception $ex) {
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
     }
 
     /**
@@ -84,26 +120,43 @@ class RoleController extends Controller
      * @param  Role $role
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Role $role)
+    public function update(Request $request, \App\Models\Role $rol)
     {
-        request()->validate(Role::$rules);
+        request()->validate(\App\Models\Role::$rules);
+        $route = self::ROUTE_BASE;
+        try {
+            $rol->update($request->all());
 
-        $role->update($request->all());
-
-        return redirect()->route('roles.index')
-            ->with('success', 'Role updated successfully');
+            return redirect()->route('rol.index')
+                ->with('success', 'Rol editado correctamente.');
+        } catch (\Exception $ex) {
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
     }
 
     /**
-     * @param int $id
+     * @param string $uuid
      * @return \Illuminate\Http\RedirectResponse
      * @throws \Exception
      */
-    public function destroy($id)
+    public function destroy(string $uuid)
     {
-        $role = Role::find($id)->delete();
+        $route = self::ROUTE_BASE;
 
-        return redirect()->route('roles.index')
-            ->with('success', 'Role deleted successfully');
+        try {
+            $role = \App\Models\Role::where('uuid', $uuid)->where('status', 1)->first();
+            if (!empty($role)) {
+                $role->status = 0;
+                $role->update();
+                return redirect()->route('rol.index')
+                    ->with('success', 'Rol eliminado correctamente');
+            } else {
+                return view('errors.notfound', compact('route'));
+            }
+        } catch (\Exception $ex) {
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
     }
 }

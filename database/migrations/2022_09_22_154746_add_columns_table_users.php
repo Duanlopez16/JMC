@@ -14,10 +14,11 @@ return new class extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
+            $table->string('uuid')->after('id');
             $table->bigInteger('rol_id')->after('password')->unsigned();
             $table->bigInteger('document_type_id')->after('rol_id')->unsigned();
-            $table->bigInteger('document_number')->after('document_type_id')->unsigned();
-            $table->bigInteger('phone')->after('document_number')->unsigned()->nullable();
+            $table->bigInteger('document_number')->after('document_type_id')->unique()->unsigned();
+            $table->bigInteger('phone')->after('document_number')->unsigned()->nullable()->unique();
             $table->string('date_birth')->after('phone');
             $table->string('address')->after('date_birth')->nullable();
             $table->boolean('status')->nullable()->default(true)->after('remember_token');

@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DocumentType;
-use Illuminate\Http\Request;
 
 /**
  * Class DocumentTypeController
@@ -11,6 +9,9 @@ use Illuminate\Http\Request;
  */
 class DocumentTypeController extends Controller
 {
+
+    const ROUTE_BASE = 'document_type';
+
     /**
      * Display a listing of the resource.
      *
@@ -18,10 +19,17 @@ class DocumentTypeController extends Controller
      */
     public function index()
     {
-        $documentTypes = DocumentType::paginate();
+        $route = self::ROUTE_BASE;
+        try {
+            $documentTypes = \App\Models\DocumentType::where('status', 1)->paginate();
 
-        return view('document-type.index', compact('documentTypes'))
-            ->with('i', (request()->input('page', 1) - 1) * $documentTypes->perPage());
+            return view('document-type.index', compact('documentTypes'))
+                ->with('i', (request()->input('page', 1) - 1) * $documentTypes->perPage());
+        } catch (\Exception $ex) {
+            $route = self::ROUTE_BASE;
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
     }
 
     /**
@@ -31,8 +39,14 @@ class DocumentTypeController extends Controller
      */
     public function create()
     {
-        $documentType = new DocumentType();
-        return view('document-type.create', compact('documentType'));
+        try {
+            $documentType = new \App\Models\DocumentType();
+            return view('document-type.create', compact('documentType'));
+        } catch (\Exception $ex) {
+            $route = self::ROUTE_BASE;
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
     }
 
     /**
@@ -41,40 +55,67 @@ class DocumentTypeController extends Controller
      * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(\Illuminate\Http\Request $request)
     {
-        request()->validate(DocumentType::$rules);
+        try {
+            request()->validate(\App\Models\DocumentType::$rules);
 
-        $documentType = DocumentType::create($request->all());
+            \App\Models\DocumentType::create($request->all());
 
-        return redirect()->route('document-types.index')
-            ->with('success', 'DocumentType created successfully.');
+            return redirect()->route('document_type.index')
+                ->with('success', 'Tipo de documento creado correctamente.');
+        } catch (\Exception $ex) {
+            $route = self::ROUTE_BASE;
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int $id
+     * @param  string $uuid
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(string $uuid)
     {
-        $documentType = DocumentType::find($id);
+        $route = self::ROUTE_BASE;
 
-        return view('document-type.show', compact('documentType'));
+        try {
+            $documentType = \App\Models\DocumentType::where('uuid', $uuid)->where('status', 1)->first();
+
+            if (!empty($documentType)) {
+                return view('document-type.show', compact('documentType'));
+            } else {
+                return view('errors.notfound', compact('route'));
+            }
+        } catch (\Exception $ex) {
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int $id
+     * @param  string $uuid
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(string $uuid)
     {
-        $documentType = DocumentType::find($id);
+        $route = self::ROUTE_BASE;
 
-        return view('document-type.edit', compact('documentType'));
+        try {
+            $documentType = \App\Models\DocumentType::where('uuid', $uuid)->where('status', 1)->first();
+            if (!empty($documentType)) {
+                return view('document-type.edit', compact('documentType'));
+            } else {
+                return view('errors.notfound', compact('route'));
+            }
+        } catch (\Exception $ex) {
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
     }
 
     /**
@@ -84,26 +125,44 @@ class DocumentTypeController extends Controller
      * @param  DocumentType $documentType
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, DocumentType $documentType)
+    public function update(\Illuminate\Http\Request $request, \App\Models\DocumentType $documentType)
     {
-        request()->validate(DocumentType::$rules);
+        $route = self::ROUTE_BASE;
 
-        $documentType->update($request->all());
+        try {
+            request()->validate(\App\Models\DocumentType::$rules);
 
-        return redirect()->route('document-types.index')
-            ->with('success', 'DocumentType updated successfully');
+            $documentType->update($request->all());
+
+            return redirect()->route('document_type.index')
+                ->with('success', 'Tipo de documento editado correctamente.');
+        } catch (\Exception $ex) {
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
     }
 
     /**
-     * @param int $id
+     * @param string $id
      * @return \Illuminate\Http\RedirectResponse
      * @throws \Exception
      */
-    public function destroy($id)
+    public function destroy(string $uuid)
     {
-        $documentType = DocumentType::find($id)->delete();
-
-        return redirect()->route('document-types.index')
-            ->with('success', 'DocumentType deleted successfully');
+        $route = self::ROUTE_BASE;
+        try {
+            $documentType = \App\Models\DocumentType::where('uuid', $uuid)->where('status', 1)->first();
+            if (!empty($documentType)) {
+                $documentType->status = 0;
+                $documentType->update();
+                return redirect()->route('document_type.index')
+                    ->with('success', 'Tipo de documento eliminado correctamente');
+            } else {
+                return view('errors.notfound', compact('route'));
+            }
+        } catch (\Exception $ex) {
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
     }
 }

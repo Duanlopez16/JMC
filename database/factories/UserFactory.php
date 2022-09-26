@@ -25,7 +25,7 @@ class UserFactory extends Factory
             'rol_id' => 1,
             'document_type_id' => 1,
             'document_number' => 11111,
-            'date_birth' => date('Y-m-d H:i:s'),
+            'date_birth' => date('Y-m-d'),
             'status' => 1,
             'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
             'remember_token' => Str::random(10)
