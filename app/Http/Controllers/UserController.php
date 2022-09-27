@@ -223,7 +223,7 @@ class UserController extends Controller
                 $user->status = 0;
                 $user->update();
                 return redirect()->route('user.index')
-                    ->with('success', 'Usuario editado correctamente.');
+                    ->with('success', 'Usuario eliminado correctamente.');
             } else {
                 return view('errors.notfound', compact('route'));
             }

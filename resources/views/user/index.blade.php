@@ -21,7 +21,7 @@ User
     <div class="row">
         <div class="col-sm-12">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header text-white" style="background-color: #FF8000;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
 
                         <span id="card_title">
@@ -29,7 +29,7 @@ User
                         </span>
 
                         <div class="float-right">
-                            <a href="{{ route('user.create') }}" class="btn btn-primary btn-sm float-right" data-placement="left">
+                            <a href="{{ route('user.create') }}" sryl class="btn btn-dark float-right text-white" style="background-color:  #800080 ;" data-placement="left">
                                 {{ __('Crear usuario') }}
                             </a>
                         </div>

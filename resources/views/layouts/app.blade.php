@@ -48,6 +48,19 @@
                             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                             </div>
                         </li>
+                        <li class="nav-item dropdown">
+                            <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                Equipos
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <a class="dropdown-item " href="{{ route('category_equipment.index') }}"><i class="fa fa-fw fa-eye"></i> Categoría de equipos</a>
+                                <a class="dropdown-item " href="{{ route('rol.index') }}"><i class="fa fa-fw fa-eye"></i> Roles</a>
+                                <a class="dropdown-item " href="{{ route('document_type.index') }}"><i class="fa fa-fw fa-eye"></i> Tipo de documento</a>
+                            </div>
+
+                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                            </div>
+                        </li>
                     </ul>
                     @endif
 
