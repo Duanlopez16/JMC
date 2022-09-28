@@ -53,8 +53,8 @@
                                 Equipos
                             </a>
                             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <a class="dropdown-item " href="{{ route('equipment.index') }}"><i class="fa fa-fw fa-eye"></i> Euipos</a>
                                 <a class="dropdown-item " href="{{ route('category_equipment.index') }}"><i class="fa fa-fw fa-eye"></i> Categoría de equipos</a>
-                                <a class="dropdown-item " href="{{ route('rol.index') }}"><i class="fa fa-fw fa-eye"></i> Roles</a>
                                 <a class="dropdown-item " href="{{ route('document_type.index') }}"><i class="fa fa-fw fa-eye"></i> Tipo de documento</a>
                             </div>
 
@@ -70,14 +70,14 @@
                         @guest
                         @if (Route::has('login'))
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
+                            <a class="nav-link" href="{{ route('login') }}">{{ __('Iniciar sessión') }}</a>
                         </li>
                         @endif
 
                         @if (Route::has('register'))
-                        <li class="nav-item">
+                        <!-- <li class="nav-item">
                             <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
-                        </li>
+                        </li> -->
                         @endif
                         @else
                         <li class="nav-item dropdown">

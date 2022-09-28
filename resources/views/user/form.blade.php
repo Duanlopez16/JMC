@@ -33,7 +33,7 @@
         </div>
         <div class="form-group">
             {{ Form::label('Fecha de nacimiento') }}
-            {{ Form::date('date_birth', $user->date_birth, ['class' => 'form-control' . ($errors->has('date_birth') ? ' is-invalid' : ''), 'placeholder' => 'Fecha de nacimiento']) }}
+            {{ Form::date('date_birth', $user->date_birth, ['class' => 'form-control' . ($errors->has('date_birth') ? ' is-invalid' : ''), 'placeholder' => 'Fecha de nacimiento', 'max'=>date('Y-m-d')]) }}
             {!! $errors->first('date_birth', '<div class="invalid-feedback">:message</div>') !!}
         </div>
         <div class="form-group">

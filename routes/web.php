@@ -28,4 +28,5 @@ Route::group(['middleware' => 'auth:web'], function () {
     Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
     Route::post('/user/search/params', [\App\Http\Controllers\UserController::class, 'search'])->name('search_user');
     Route::resource(\App\Http\Controllers\CategoryEquipmentController::ROUTE_BASE, \App\Http\Controllers\CategoryEquipmentController::class);
+    Route::resource(\App\Http\Controllers\EquipmentController::ROUTE_BASE, \App\Http\Controllers\EquipmentController::class);
 });
