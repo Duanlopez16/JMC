@@ -12,6 +12,16 @@ class UserController extends Controller
     const ROUTE_BASE = 'user';
 
     /**
+     * __construct
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware('admin')->except(['show', 'update_password', 'update_password_action', 'index']);
+    }
+
+    /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response

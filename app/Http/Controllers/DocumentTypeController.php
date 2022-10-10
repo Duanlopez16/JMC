@@ -13,6 +13,16 @@ class DocumentTypeController extends Controller
     const ROUTE_BASE = 'document_type';
 
     /**
+     * __construct
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware('admin')->except(['show', 'index']);
+    }
+
+    /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response

@@ -7,7 +7,7 @@
         </div>
         <div class="form-group">
             {{ Form::label('Categoría') }}
-            {{ Form::select('category_equipment_id', $category_equipment,$equipment->category_equipment_id, ['class' => 'form-control' . ($errors->has('category_equipment_id') ? ' is-invalid' : ''), 'placeholder' => 'Seleccione opción']) }}
+            {{ Form::select('category_equipment_id', $category_equipment ,$equipment->category_equipment_id, ['class' => 'form-control' . ($errors->has('category_equipment_id') ? ' is-invalid' : ''), 'placeholder' => 'Seleccione opción']) }}
             {!! $errors->first('category_equipment_id', '<div class="invalid-feedback">:message</div>') !!}
         </div>
         <div class="form-group">

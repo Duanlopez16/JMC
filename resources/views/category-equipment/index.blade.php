@@ -17,9 +17,11 @@ Category Equipment
                         </span>
 
                         <div class="float-right">
+                            @if ((int)Auth::user()->rol_id == (int)\App\Models\User::PROFILES['admin'])
                             <a href="{{ route('category_equipment.create') }}" class="btn btn-primary btn-sm float-right" data-placement="left">
                                 {{ __('Crear') }}
                             </a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -54,10 +56,12 @@ Category Equipment
                                     <td>
                                         <form action="{{ route('category_equipment.destroy',$categoryEquipment->uuid) }}" method="POST">
                                             <a class="btn btn-sm btn-primary " href="{{ route('category_equipment.show',$categoryEquipment->uuid) }}"><i class="fa fa-fw fa-eye"></i> Ver</a>
-                                            <a class="btn btn-sm btn-success" href="{{ route('category_equipment.edit',$categoryEquipment->uuid) }}"><i class="fa fa-fw fa-edit"></i> Editar</a>
                                             @csrf
+                                            @if ((int)Auth::user()->rol_id == (int)\App\Models\User::PROFILES['admin'])
+                                            <a class="btn btn-sm btn-success" href="{{ route('category_equipment.edit',$categoryEquipment->uuid) }}"><i class="fa fa-fw fa-edit"></i> Editar</a>
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger btn-sm"><i class="fa fa-fw fa-trash"></i> Eliminar</button>
+                                            @endif
                                         </form>
                                     </td>
                                 </tr>

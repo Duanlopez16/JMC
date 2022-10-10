@@ -13,6 +13,17 @@ class EquipmentController extends Controller
 {
 
     const ROUTE_BASE = 'equipment';
+
+    /**
+     * __construct
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware('admin')->except(['show', 'index', 'get_equipments_category']);
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -173,6 +184,51 @@ class EquipmentController extends Controller
                 return view('errors.notfound', compact('route'));
             }
         } catch (\Exception $ex) {
+            $error = $ex->getMessage();
+            return view('errors.error', compact('route', 'error'));
+        }
+    }
+
+    /**
+     * get_equipments_category
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function get_equipments_category()
+    {
+        try {
+
+            $equipments_data = [];
+            $category_equipments = \App\Models\CategoryEquipment::where('status', 1)->get(['id', 'name'])->toArray();
+
+            if (!empty($category_equipments)) {
+
+                $equipments = \App\Models\Equipment::where('status', 1)->whereIn('category_equipment_id', array_column($category_equipments, 'id'))->get(['category_equipment_id', 'quantity'])->toArray();
+
+                if (!empty($equipments)) {
+                    foreach ($category_equipments as $category_equipment) {
+                        $equipments_category_filter = array_filter($equipments, function ($value) use ($category_equipment) {
+                            if ((int)$category_equipment['id'] ==  (int)$value['category_equipment_id']) {
+                                return $value;
+                            }
+                        });
+                        if (!empty($equipments_category_filter)) {
+                            $equipments_data[] = ['name' => $category_equipment['name'], 'quantity' => array_sum(array_column($equipments_category_filter, 'quantity'))];
+                        } else {
+                            $equipments_data[] = ['name' => $category_equipment['name'], 'quantity' => 0];
+                        }
+                    }
+                } else {
+                    $equipments_data = array_map(function ($value) {
+                        return ['name' => $value, 'quantity' => 0];
+                    }, array_column($category_equipments->toArray(), 'name'));
+                }
+            }
+
+            return view('equipment.summary', compact('equipments_data'))
+                ->with('i');
+        } catch (\Exception $ex) {
+            $route = self::ROUTE_BASE;
             $error = $ex->getMessage();
             return view('errors.error', compact('route', 'error'));
         }

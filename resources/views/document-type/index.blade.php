@@ -17,9 +17,11 @@ tipo de documento
                         </span>
 
                         <div class="float-right">
+                            @if ((int)Auth::user()->rol_id == (int)\App\Models\User::PROFILES['admin'])
                             <a href="{{ route('document_type.create') }}" class="btn btn-primary btn-sm float-right" data-placement="left">
                                 {{ __('Crear') }}
                             </a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -55,10 +57,12 @@ tipo de documento
                                     <td>
                                         <form action="{{ route('document_type.destroy',$documentType->uuid) }}" method="POST">
                                             <a class="btn btn-sm btn-primary " href="{{ route('document_type.show',$documentType->uuid) }}"><i class="fa fa-fw fa-eye"></i> Ver</a>
+                                            @if ((int)Auth::user()->rol_id == (int)\App\Models\User::PROFILES['admin'])
                                             <a class="btn btn-sm btn-success" href="{{ route('document_type.edit',$documentType->uuid) }}"><i class="fa fa-fw fa-edit"></i> Editar</a>
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger btn-sm"><i class="fa fa-fw fa-trash"></i> Eliminar</button>
+                                            @endif
                                         </form>
                                     </td>
                                 </tr>

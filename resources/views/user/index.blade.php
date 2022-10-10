@@ -29,9 +29,12 @@ User
                         </span>
 
                         <div class="float-right">
+                            @if ((int)Auth::user()->rol_id == (int)\App\Models\User::PROFILES['admin'])
                             <a href="{{ route('user.create') }}" sryl class="btn btn-dark float-right text-white" style="background-color:  #800080 ;" data-placement="left">
                                 {{ __('Crear usuario') }}
                             </a>
+
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -70,11 +73,13 @@ User
                                     <td>{{ $user->document_number }}</td>
                                     <td>
                                         <form action="{{ route('user.destroy',$user->uuid) }}" method="POST">
+                                            @if ((int)Auth::user()->rol_id == (int)\App\Models\User::PROFILES['admin'])
                                             <a class="btn btn-sm btn-primary " href="{{ route('user.show',$user->uuid) }}"><i class="fa fa-fw fa-eye"></i> Ver</a>
                                             <a class="btn btn-sm btn-success" href="{{ route('user.edit',$user->uuid) }}"><i class="fa fa-fw fa-edit"></i> Editar</a>
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger btn-sm"><i class="fa fa-fw fa-trash"></i> Eliminar</button>
+                                            @endif
                                         </form>
                                     </td>
                                 </tr>

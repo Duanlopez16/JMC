@@ -48,19 +48,34 @@
                             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                             </div>
                         </li>
+                        @if ((int)Auth::user()->rol_id == (int)\App\Models\User::PROFILES['admin'])
                         <li class="nav-item dropdown">
                             <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                                 Equipos
                             </a>
                             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                <a class="dropdown-item " href="{{ route('equipment.index') }}"><i class="fa fa-fw fa-eye"></i> Euipos</a>
+                                <a class="dropdown-item " href="{{ route('equipment.index') }}"><i class="fa fa-fw fa-eye"></i> Equipos</a>
                                 <a class="dropdown-item " href="{{ route('category_equipment.index') }}"><i class="fa fa-fw fa-eye"></i> Categoría de equipos</a>
-                                <a class="dropdown-item " href="{{ route('document_type.index') }}"><i class="fa fa-fw fa-eye"></i> Tipo de documento</a>
+                                <a class="dropdown-item " href="{{ route('find_equipaments') }}"><i class="fa fa-fw fa-eye"></i>Disponibilidad</a>
+                                <a class="dropdown-item " href="{{ route('loan_detail.index') }}"><i class="fa fa-fw fa-eye"></i>Prestamos</a>
                             </div>
 
                             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                             </div>
                         </li>
+                        @else
+                        <li class="nav-item dropdown">
+                            <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                Equipos
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <a class="dropdown-item " href="{{ route('find_equipaments') }}"><i class="fa fa-fw fa-eye"></i>Disponibilidad</a>
+                            </div>
+
+                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                            </div>
+                        </li>
+                        @endif
                     </ul>
                     @endif
 

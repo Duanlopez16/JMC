@@ -13,13 +13,15 @@ Equipment
                     <div style="display: flex; justify-content: space-between; align-items: center;">
 
                         <span id="card_title">
-                            {{ __('Equipment') }}
+                            {{ __('Equipos') }}
                         </span>
 
                         <div class="float-right">
+                            @if ((int)Auth::user()->rol_id == (int)\App\Models\User::PROFILES['admin'])
                             <a href="{{ route('equipment.create') }}" class="btn btn-primary btn-sm float-right" data-placement="left">
                                 {{ __('Crear equipo') }}
                             </a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -57,10 +59,12 @@ Equipment
                                     <td>
                                         <form action="{{ route('equipment.destroy',$equipment->uuid) }}" method="POST">
                                             <a class="btn btn-sm btn-primary " href="{{ route('equipment.show',$equipment->uuid) }}"><i class="fa fa-fw fa-eye"></i> Ver</a>
-                                            <a class="btn btn-sm btn-success" href="{{ route('equipment.edit',$equipment->uuid) }}"><i class="fa fa-fw fa-edit"></i> Editar</a>
                                             @csrf
                                             @method('DELETE')
+                                            @if ((int)Auth::user()->rol_id == (int)\App\Models\User::PROFILES['admin'])
+                                            <a class="btn btn-sm btn-success" href="{{ route('equipment.edit',$equipment->uuid) }}"><i class="fa fa-fw fa-edit"></i> Editar</a>
                                             <button type="submit" class="btn btn-danger btn-sm"><i class="fa fa-fw fa-trash"></i> Eliminar</button>
+                                            @endif
                                         </form>
                                     </td>
                                 </tr>

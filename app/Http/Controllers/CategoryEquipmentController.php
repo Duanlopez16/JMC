@@ -12,6 +12,16 @@ class CategoryEquipmentController extends Controller
     const ROUTE_BASE = 'category_equipment';
 
     /**
+     * __construct
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware('admin')->except(['show', 'index']);
+    }
+
+    /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
